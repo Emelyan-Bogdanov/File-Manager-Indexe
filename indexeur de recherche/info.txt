@@ -1,0 +1,18 @@
+- titre : indexeur de recherche
+
+
+- problématique : 'je veux cherche un fichier mais je ne sais pas ou '
+
+- utilité : 
+    - uploader un fichier pour le sauvegarder dans l'application
+    - ajouter des mots clé ou une description ou bien des 'tags'
+    - si le fichier apparaît dans les résultats de recherche , clicked pour l'ouvrir dans l'explorateur
+
+    + l'app s'execute en background toujour pour rechercher des nouveaux fichiers
+        - si il decouvre de nouveaux fichiers , il les ajoute dans la list , until the user decides to add tags or description
+        - si l'utilisateur les ajoutent , il crée des index dans /indexes
+
+- tech stack : 
+    - Pyqt5 pour app
+    - 
+- /indexes : contient les indexes des fichiers importés par 

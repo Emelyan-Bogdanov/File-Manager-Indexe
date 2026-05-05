@@ -1,0 +1,10 @@
++ DONE
+    - Finder.FindByKeyword() -> list[str] # return list of indexers files that contains tit
+         : use a keyword to match trought all files descriptions and keywords tags
+    - File.upload() -> None
+        : save the indexer of an uploede file
+    
+
++ TASK
+    - File.getNewFiled(DesktopPath:str)-> list
+        : return a list of paths of the new added files in the desktop directory
