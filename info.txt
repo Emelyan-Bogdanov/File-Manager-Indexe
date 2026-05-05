@@ -1,0 +1,245 @@
+
+
+
+- titre : indexeur de recherche
+- problématique : 'je veux cherche un fichier mais je ne sais pas ou '
+
+
+
+- Structure
+    /src
+    |_indexes/ # contient les fichiers d'indice (chaque fichier contient un nom unique)
+    |   |_ 0.json
+    |   |_1.json 
+    |_tools/ # contient les fichiers python utils
+    |   |_ file.py # pour les opérations de fichier
+    |   |_ find.py # pour tout ce qui est recherche
+    |   |_ params.json # contient les parameters de l'app
+    |   |_ params.py # load/update parameters as the user decide
+    |_gui/ # contient les fichiers de l'interface utilisateur
+        |_...
+    |
+    |_ new_files_indexes/ # contient les fichiers nouveaux qui ne sont pas encore indexés
+        |_ 0_new.json 
+
+- description de processus : 
+    [!]  le fichier paramétre contient "SCAN_NEW_FILE" est un boolean , si  activé l'app scan pour tous les nouveaux fichiers qui apparaît dans les "PATH_TO_SCAN" et qui ne sont pas encore indexé
+    [!]  le fichier paramétre contient "IGNORE_PATH" qui est une list des dossiers à ne pas inclure dans le scan (ne pas scanner l'interieur)
+    [!]  le fichier paramétre contient "PATH_TO_SCAN" qui est une autre list qui contient les paths des dossiers à scanner seulement , en inclusant les childs paths de ces dossiers 
+    [!]  le fichier paramétre contient "EXT_TO_IGNORE" qui est une autre list qui contient les extensions des fichiers à new pas scanner , exemple : [".py",".csv"]
+
+- actions :  
+    - uploader: 
+        1.  l'utilisateur importe un fichier pour le sauvegarder dans l'application
+        2. ajouter des mots clé ou une description ou bien des 'tags' à ce fichier uploadé
+        3. l'application  utiliser ces mots clés , descriptions ... pour  créer son fichier d'index indexes/*.json
+    - search : 
+        1. l'utilisateur cherche dans la barre de recherche selon le type : 'par mot clé' , 'par mots dans description'
+        2. si le fichier apparaît dans les résultats de recherche ,et l'utilsateur le  click  , l'app l'ouvrir dans l'explorateur
+    
+    - scan : 
+        1. si "SCAN_NEW_FILE" dans le fichier parametre est activé , une fois l'app est lancé , il affiche 'scanning for new files'
+        2. si il decouvre de nouveaux fichiers , il les ajoute dans la list , until the user decides to add tags or description to make an indexer file *.json for them
+        [!] les fichiers scannés qui sont nouveaux , s'affichent sous forme de list-item , et si clické , l'app afficher formulaire , pour que l'utilisateur ajoute les infos pour créer un indexeur pour ce fichier
+    + si un index pour un fichier contient le path d'un fichier qui est supprimé , on le update et mettre sont couleur en rouge
+
+- tech stack : 
+    - Pyqt5 pour app
+    - 
+- structure exemple des fichiers : 
+= params.json =
+{"
+    paths_to_search_in": ["C:\\Users\\HP\\Desktop",
+     "C:\\Users\\HP/Documents",
+     "C:\\Users\\HP/Downloads"
+     ],
+    "path_to_ignore": ["projet_assistant_chat_de_IBRAHIM"],
+    "ext_to_ignore": [".pyc", ".py", ".html", ".css"],
+    "scan_new_files": false,
+    ...autres parameters
+}
+=*.json= (indexeur de fichier)
+{
+    "filename": "rr",
+    "filepath": "/rr",
+    "description": "pour le travail",
+    "keywords": ["one", "two", "three"]
+}
+
+=my tries to make file.py=
+import os
+import json
+
+
+
+
+INDEXER_PATH = "src/indexes/"
+
+class File :
+    
+    def __init__(self,path:str,tags:list[str], description:str):
+        self.path = path
+        self.tags = tags
+        self.description = description
+        # check if file is deleted from the its source 
+        self.deleted = os.path.exists(self.path)
+    def saveFileDescription(self):
+        # save the file infos to the search indexer
+
+        pass
+    @staticmethod
+    def getDesktopPath():
+        return os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop') 
+
+    @staticmethod
+    def PathsToSearchIn():
+        return (
+            File.getDesktopPath() , 
+            f"{os.environ['USERPROFILE']}/Documents", # documents
+            f"{os.environ['USERPROFILE']}/Downloads", # downloads
+        )
+    
+    @staticmethod
+    def upload(path:str,keywords:list[str], description:str):
+        """
+        save the file infos to /indexer
+        """
+        
+        # extract a unique id
+        index = len(os.listdir(INDEXER_PATH) ) # make an id
+        while os.path.exists(f"{INDEXER_PATH}/{index}.json"):
+            index +=1 # until find unique index
+        
+        # extract file infos
+        filename = path.replace("\\","/").split("/")[-1]
+
+        with open(f"{INDEXER_PATH}{index}.json","w") as file:
+            obj = {
+                "filename":filename,
+                "filepath":path,
+                "description":description,
+                "keywords" : keywords,
+            }
+            json.dump(obj,file)
+
+
+if __name__ == "__main__":
+    print([os.path.exists(i) for i in File.PathsToSearchIn()])
+    # File.upload(
+    #     "/rr",
+    #     ["one","two","three"],
+    #     description="pour le travail"
+    # )
+    # File.upload(
+    #     "/rr",
+    #     ["one","two","three"],
+    #     description="pour le sport"
+    # )
+    # File.upload(
+    #     "/rr",
+    #     ["one","two","three"],
+    #     description="pour le travail"
+    # )
+
+= my tries to make find.py =
+
+from file import INDEXER_PATH
+import os
+import json
+from settings import data
+
+class Finder :
+    
+    @staticmethod
+    def findByKeyword(keyword:list[str]):
+        found = [] # list of indexers found in file
+        for file in os.listdir(INDEXER_PATH) :
+            with open(f"{INDEXER_PATH}{file}",'r') as filedata :
+                data = json.load(filedata)
+                if Finder.containsKeyword(keyword,data) :
+                    found.append(file)
+                
+        return found # list of file indexers of this file
+
+    @staticmethod
+    def containsKeyword(keyword:str,filedata:dict):
+        # if in tags or in description
+        return keyword in filedata["description"] or keyword in filedata["keywords"]
+
+    @staticmethod
+    def isIgnored(folder:str):
+        import settings
+        # print(settings.data[""])
+        for f in settings.data["path_to_ignore"] :
+            if f in folder :
+                return True
+        return False
+        
+
+    @staticmethod
+    def getNewFiles():
+        import os.path
+        # get paths to search in
+        file_to_search_in = data["paths_to_search_in"]
+
+        # walk over
+        
+        for search_path in file_to_search_in :
+            print(f"searching in {search_path} =====>")
+            for path, directories, files in os.walk(f"{search_path}"):
+                if not Finder.isIgnored(path) :
+                    print(path)
+
+
+Finder.getNewFiles()
+= my tries to make settings.py=
+
+import json
+import os
+
+# paths_to_search_in = (
+#     os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop') , 
+#     f"{os.environ['USERPROFILE']}/Documents", # documents
+#     f"{os.environ['USERPROFILE']}/Downloads", # downloads
+# )
+
+
+# path_to_ignore = ()
+# ext_to_ignore = (".env",".py",".html")
+
+from file import File
+paths_to_search_in = File.PathsToSearchIn()
+path_to_ignore = ["projet_assistant_chat_de_IBRAHIM"]
+ext_to_ignore = [".pyc",".py",".html",".css"]
+scan_new_files = False
+
+
+def saveParams():
+    # save to json
+    with open("src/params.json","w") as file :
+        obj = {
+            "paths_to_search_in" : paths_to_search_in,
+            "path_to_ignore" : path_to_ignore,
+            "ext_to_ignore" : ext_to_ignore,
+            "scan_new_files":scan_new_files
+        }
+        json.dump(obj,file)
+        
+saveParams()
+def loadSettings():
+    with open("src/params.json","r") as file :
+        d = json.load(file)
+    return d
+
+
+# update in vm
+data = loadSettings()
+paths_to_search_in = data["paths_to_search_in"]
+path_to_ignore =  data["path_to_ignore"]
+ext_to_ignore = data["ext_to_ignore"]
+scan_new_files = data["scan_new_files"]
+
+
+# if a path is ignored
+def isIgnored(path:str):
+    return path in data["path_to_ignore"] 
