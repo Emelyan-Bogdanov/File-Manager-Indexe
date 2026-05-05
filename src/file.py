@@ -5,7 +5,7 @@ import json
 
 
 INDEXER_PATH = "src/indexes/"
-SCANNED_PATH = "src/scan"
+SCANNED_PATH = "src/scan/"
 
 class File :
     
@@ -67,7 +67,7 @@ class File :
         
     @staticmethod
     def saveScanner(filename:str , path):
-        with open(f"{SCANNED_PATH}{filename}","w") as file :
+        with open(f"{SCANNED_PATH}{filename}.json","w") as file :
             obj = {
                 "path":path
             }
