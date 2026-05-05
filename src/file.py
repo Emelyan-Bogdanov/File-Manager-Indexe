@@ -5,6 +5,7 @@ import json
 
 
 INDEXER_PATH = "src/indexes/"
+SCANNED_PATH = "src/scan"
 
 class File :
     
@@ -14,10 +15,6 @@ class File :
         self.description = description
         # check if file is deleted from the its source 
         self.deleted = os.path.exists(self.path)
-    def saveFileDescription(self):
-        # save the file infos to the search indexer
-
-        pass
     @staticmethod
     def getDesktopPath():
         return os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop') 
@@ -52,22 +49,26 @@ class File :
                 "keywords" : keywords,
             }
             json.dump(obj,file)
-
-
-if __name__ == "__main__":
-    print([os.path.exists(i) for i in File.PathsToSearchIn()])
-    # File.upload(
-    #     "/rr",
-    #     ["one","two","three"],
-    #     description="pour le travail"
-    # )
-    # File.upload(
-    #     "/rr",
-    #     ["one","two","three"],
-    #     description="pour le sport"
-    # )
-    # File.upload(
-    #     "/rr",
-    #     ["one","two","three"],
-    #     description="pour le travail"
-    # )
+    
+    @staticmethod
+    def loadIndexer(filename:str):
+        """
+            load indexer json data by its name
+        """
+        with open(f"{INDEXER_PATH}{filename}","r") as file :
+            return json.load(file)
+    @staticmethod
+    def loadScanned(filename:str):
+        """
+            load indexer json data by its name
+        """
+        with open(f"{SCANNED_PATH}{filename}","r") as file :
+            return json.load(file)
+        
+    @staticmethod
+    def saveScanner(filename:str , path):
+        with open(f"{SCANNED_PATH}{filename}","w") as file :
+            obj = {
+                "path":path
+            }
+            json.dump(obj,file)

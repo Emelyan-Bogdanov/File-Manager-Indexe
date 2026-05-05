@@ -39,12 +39,38 @@ class Finder :
         file_to_search_in = data["paths_to_search_in"]
 
         # walk over
-        
+        new_files = []
         for search_path in file_to_search_in :
             print(f"searching in {search_path} =====>")
             for path, directories, files in os.walk(f"{search_path}"):
-                if not Finder.isIgnored(path) :
-                    print(path)
+                if Finder.isIgnored(path) :
+                    # print("PATH",path)
+                    # print("FILE",files)
+                    # print("DIRECTORY",directories)
+                    for file in files :
+                        full_path = os.path.join(path, file)
+                        new_files.append(full_path)
+        return new_files
+    
+    @staticmethod
+    def whatAreNewFiles(newFiles:list[str]):
+        """
+            compare scaned file and existant indexers , and returns only what is new
+        """
+        # load existant indexers
+        from file import File
+        
+        # create a list of file paths that are indexed
+        indexed = [File.loadIndexer(filename)["filepath"] for filename in os.listdir(INDEXER_PATH)]
+        
+        # search for file paths that are not in indexed
+        return [i for i in newFiles if i not in indexed]
+    
+    @staticmethod
+    def getScannerFiles():
+        from file import File , SCANNED_PATH
+        indexed = [File.loadScanned(filename)["path"] for filename in os.listdir(SCANNED_PATH)]
 
-
-Finder.getNewFiles()
+print(len(Finder.whatAreNewFiles(
+    Finder.getNewFiles()
+)))
